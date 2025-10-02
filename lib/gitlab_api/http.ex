@@ -26,7 +26,8 @@ defmodule GitlabApi.HTTP do
       method: method,
       path: path,
       params: filter_params(params),
-      opts: opts
+      opts: opts,
+      req_headers: []
     }
     |> prepare_path()
     |> build_request_uri()
@@ -72,7 +73,7 @@ defmodule GitlabApi.HTTP do
     {:error, %{reason: error}}
   end
 
-  defp build_request_headers(%State{opts: opts} = state) do
+  defp build_request_headers(%State{opts: opts, req_headers: headers} = state) do
     token =
       case Keyword.fetch(opts, :api_token) do
         {:ok, token} ->
@@ -82,11 +83,7 @@ defmodule GitlabApi.HTTP do
           GitlabApi.auth_token()
       end
 
-    headers = [
-      {"PRIVATE-TOKEN", token},
-      {"Content-Type", "application/json"}
-    ]
-    %{state | req_headers: headers}
+    %{state | req_headers: [{"PRIVATE-TOKEN", token} | headers]}
   end
 
   defp build_request_body(%State{method: method} = state) when method in [:get, :delete] do
@@ -136,6 +133,14 @@ defmodule GitlabApi.HTTP do
     end
   end
 
+  defp put_path_params(source_params, ["_"], source_path) do
+    path =
+      source_path
+      |> String.replace(":_", source_params)
+      |> String.trim_trailing("/")
+
+    {path, %{}}
+  end
   defp put_path_params(source_params, keys, source_path) do
     {path, params} =
       Enum.reduce(keys, {source_path, source_params}, fn(key, {path, params}) ->
@@ -155,9 +160,16 @@ defmodule GitlabApi.HTTP do
   end
 
   defp filter_params(params) when is_struct(params) do
-    Map.from_struct(params) |> filter_params()
+    Map.from_struct(params) |> filter_map_params()
+  end
+  defp filter_params(params) when is_map(params) do
+    filter_map_params(params)
   end
   defp filter_params(params) do
+    params
+  end
+
+  defp filter_map_params(params) do
     for {_k, v} = p <- params, v != nil, into: %{}, do: p
   end
 end
