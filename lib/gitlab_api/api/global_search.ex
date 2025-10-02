@@ -1,4 +1,4 @@
-defmodule GitlabApi.GlobalSearch.V4 do
+defmodule GitlabApi.GlobalSearch do
   use GitlabApi.API
 
   ## Based on https://docs.gitlab.com/api/search/#global-search

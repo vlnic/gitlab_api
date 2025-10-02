@@ -1,4 +1,4 @@
-defmodule GitlabApi.Projects.V4 do
+defmodule GitlabApi.Projects do
   use GitlabApi.API
 
   action :get,
