@@ -24,7 +24,7 @@ defmodule GitlabApi.GroupSearchTest do
         "last_activity_at" => "2018-01-31T09:56:30.902Z"
       }]), []})
 
-      assert {:ok, _response} = GitlabApi.GroupSearch.projects(%{group: 3, project: "flight"})
+      assert {:ok, _response} = GitlabApi.GroupSearch.request(%{group: 3, search: "flight", scope: "projects"})
       assert_receive {:request_method, :get}
       assert_receive {:request_uri, "http://localhost/api/v4/groups/3/search?scope=projects&search=flight"}
       assert_receive {:request_body, ""}

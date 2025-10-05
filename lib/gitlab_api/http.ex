@@ -145,7 +145,7 @@ defmodule GitlabApi.HTTP do
     {path, params} =
       Enum.reduce(keys, {source_path, source_params}, fn(key, {path, params}) ->
         {value, params} = Map.pop(params, String.to_existing_atom(key), "")
-        {String.replace(path, ":#{key}", value), params}
+        {String.replace(path, ":#{key}", "#{value}"), params}
       end)
 
     {String.trim_trailing(path, "/"), params}

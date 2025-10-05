@@ -1,8 +1,10 @@
-defmodule GitlabApi.GroupSearch do
+defmodule GitlabApi.ProjectSearch do
   use GitlabApi.API
 
   alias Construct.Types.Enum
   alias GitlabApi.Types.StringOrInteger
+
+  ## https://docs.gitlab.com/api/search/#project-search
 
   @scopes ~w(
     projects issues merge_requests
@@ -10,12 +12,10 @@ defmodule GitlabApi.GroupSearch do
     wiki_blobs commits blobs notes
   )
 
-  ## Implement https://docs.gitlab.com/api/search/#group-search
-
   action :request,
-    endpoint: {:get, "/api/v4/groups/:group/search"},
+    endpoint: {:get, "/api/v4/projects/:project/search"},
     params: [
-      group: StringOrInteger,
+      project: StringOrInteger,
       search: :string,
       scope: {Enum, @scopes},
       search_type: {{Enum, ["basic", "advanced", "zoekt"]}, default: nil},

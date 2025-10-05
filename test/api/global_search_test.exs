@@ -1,8 +1,8 @@
 defmodule GitlabApi.GlobalSearchTest do
   use GitlabApi.CommonCase
 
-  describe "common" do
-    test "global search users" do
+  describe "common global search" do
+    test "users" do
       client_stub({:ok, 200, Jason.encode!([%{
         "id" => 123,
         "name" => "User Test",
@@ -12,14 +12,19 @@ defmodule GitlabApi.GlobalSearchTest do
         "web_url" => ""
       }]), []})
 
-      assert {:ok, _response} = GitlabApi.GlobalSearch.users("user.test")
+      assert {:ok, _response} = GitlabApi.GlobalSearch.request(%{
+        search: "user.test",
+        scope: "users",
+        search_type: "basic"
+      })
+
       assert_receive {:request_method, :get}
-      assert_receive {:request_uri, "http://localhost/api/v4/search?scope=users&search=user.test"}
+      assert_receive {:request_uri, "http://localhost/api/v4/search?scope=users&search=user.test&search_type=basic"}
       assert_receive {:request_body, ""}
       assert_receive {:request_headers, [{"PRIVATE-TOKEN", _token}]}
     end
 
-    test "global search projects" do
+    test "projects" do
       client_stub({:ok, 200, Jason.encode!([%{
         "id" => 6,
         "description" => "Nobis sed ipsam vero quod cupiditate veritatis hic.",
@@ -41,14 +46,14 @@ defmodule GitlabApi.GlobalSearchTest do
         "last_activity_at" => "2018-01-31T09:56:30.902Z"
       }]), []})
 
-      assert {:ok, _response} = GitlabApi.GlobalSearch.projects("flight")
+      assert {:ok, _response} = GitlabApi.GlobalSearch.request(%{search: "flight", scope: "projects"})
       assert_receive {:request_method, :get}
       assert_receive {:request_uri, "http://localhost/api/v4/search?scope=projects&search=flight"}
       assert_receive {:request_body, ""}
       assert_receive {:request_headers, [{"PRIVATE-TOKEN", _token}]}
     end
 
-    test "global search merge_requests" do
+    test "merge_requests" do
       client_stub({:ok, 200, Jason.encode!([[%{
         "id" => 56,
         "iid" => 8,
@@ -116,9 +121,40 @@ defmodule GitlabApi.GlobalSearchTest do
         }
       }]]), []})
 
-      assert {:ok, _response} = GitlabApi.GlobalSearch.merge_requests("file")
+      assert {:ok, _response} = GitlabApi.GlobalSearch.request(%{
+        search: "file",
+        scope: "merge_requests",
+        order_by: "updated_at",
+        sort: "desc",
+        state: "open"
+      })
+
       assert_receive {:request_method, :get}
-      assert_receive {:request_uri, "http://localhost/api/v4/search?scope=merge_requests&search=file"}
+      assert_receive {
+        :request_uri,
+        "http://localhost/api/v4/search?scope=merge_requests&state=open&sort=desc&search=file&order_by=updated_at"
+      }
+      assert_receive {:request_body, ""}
+      assert_receive {:request_headers, [{"PRIVATE-TOKEN", _token}]}
+    end
+
+    test "milestones" do
+      client_stub({:ok, 200, Jason.encode!([%{
+        "id" => 44,
+        "iid" => 1,
+        "project_id" => 12,
+        "title" => "next release",
+        "description" => "Next release milestone",
+        "state" => "active",
+        "created_at" => "2018-02-06T12:43:39.271Z",
+        "updated_at" => "2018-02-06T12:44:01.298Z",
+        "due_date" => "2018-04-18",
+        "start_date" => "2018-02-04"
+      }]), []})
+
+      assert {:ok, _response} = GitlabApi.GlobalSearch.request(%{scope: "milestones", search: "release"})
+      assert_receive {:request_method, :get}
+      assert_receive {:request_uri, "http://localhost/api/v4/search?scope=milestones&search=release"}
       assert_receive {:request_body, ""}
       assert_receive {:request_headers, [{"PRIVATE-TOKEN", _token}]}
     end
