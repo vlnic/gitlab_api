@@ -1,13 +1,20 @@
 defmodule GitlabApi.GlobalSearch do
   use GitlabApi.API
 
-  ## Based on https://docs.gitlab.com/api/search/#global-search
+  ## Implement https://docs.gitlab.com/api/search/#global-search
 
   action :users,
     endpoint: {:get, "/api/v4/search"},
     params: {:primitive, :string},
     params_fn: fn(username) ->
       %{scope: "users", search: username}
+    end
+
+  action :projects,
+    endpoint: {:get, "/api/v4/search"},
+    params: {:primitive, :string},
+    params_fn: fn(project) ->
+      %{scope: "projects", search: project}
     end
 
   action :merge_requests,
@@ -22,13 +29,6 @@ defmodule GitlabApi.GlobalSearch do
     params: {:primitive, :string},
     params_fn: fn(issue) ->
       %{scope: "issues", search: issue}
-    end
-
-  action :projects,
-    endpoint: {:get, "/api/v4/search"},
-    params: {:primitive, :string},
-    params_fn: fn(project) ->
-      %{scope: "projects", search: project}
     end
 
   action :milestones,
