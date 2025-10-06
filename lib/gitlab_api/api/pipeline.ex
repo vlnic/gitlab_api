@@ -65,7 +65,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#get-a-test-report-for-a-pipeline
 
   action :test_report,
-    endpoint: {:get, "/projects/:id/pipelines/:pipeline_id/test_report"},
+    endpoint: {:get, "/api/v4/projects/:id/pipelines/:pipeline_id/test_report"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer
@@ -74,7 +74,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#get-a-test-report-summary-for-a-pipeline
 
   action :test_report_summary,
-    endpoint: {:get, "/projects/:id/pipelines/:pipeline_id/test_report_summary"},
+    endpoint: {:get, "/api/v4/projects/:id/pipelines/:pipeline_id/test_report_summary"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer
@@ -94,7 +94,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#retry-jobs-in-a-pipeline
 
   action :retry,
-    endpoint: {:post, "/projects/:id/pipelines/:pipeline_id/retry"},
+    endpoint: {:post, "/api/v4/projects/:id/pipelines/:pipeline_id/retry"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer
@@ -103,7 +103,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#cancel-all-jobs-for-a-pipeline
 
   action :cancel_all,
-    endpoint: {:post, "/projects/:id/pipelines/:pipeline_id/cancel"},
+    endpoint: {:post, "/api/v4/projects/:id/pipelines/:pipeline_id/cancel"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer
@@ -112,7 +112,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#delete-a-pipeline
 
   action :delete,
-    endpoint: {:delete, "/projects/:id/pipelines/:pipeline_id"},
+    endpoint: {:delete, "/api/v4/projects/:id/pipelines/:pipeline_id"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer
@@ -121,7 +121,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#update-pipeline-metadata
 
   action :update_metadata,
-    endpoint: {:put, "/projects/:id/pipelines/:pipeline_id/metadata"},
+    endpoint: {:put, "/api/v4/projects/:id/pipelines/:pipeline_id/metadata"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer,
