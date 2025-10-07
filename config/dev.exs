@@ -1,5 +1,5 @@
 import Config
 
 config :gitlab_api,
-  host: File.read!("gitlab_host"),
-  token: File.read!("gitlab_token")
+  host: System.get_env("JIRA_HOST", "http://localhost"),
+  token: System.get_env("JIRA_TOKEN")
