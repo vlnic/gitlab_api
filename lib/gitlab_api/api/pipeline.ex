@@ -15,7 +15,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#list-project-pipelines
 
   action :all,
-    endpoint: {:get, "/projects/:project/pipelines"},
+    endpoint: {:get, "/api/v4/projects/:project/pipelines"},
     params: [
       project: StringOrInteger,
       name: {:string, default: nil},
@@ -37,7 +37,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#get-a-single-pipeline
 
   action :get,
-    endpoint: {:get, "/projects/:project/pipelines/:id"},
+    endpoint: {:get, "/api/v4/projects/:project/pipelines/:id"},
     params: [
       project: StringOrInteger,
       id: :integer
@@ -46,7 +46,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#get-the-latest-pipeline
 
   action :latest,
-    endpoint: {:get, "/projects/:page/pipelines/latest"},
+    endpoint: {:get, "/api/v4/projects/:page/pipelines/latest"},
     params: [
       ref: :string,
       page: {:integer, default: 1},
@@ -56,7 +56,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#get-variables-for-a-pipeline
 
   action :variables,
-    endpoint: {:get, "/projects/:id/pipelines/:pipeline_id/variables"},
+    endpoint: {:get, "/api/v4/projects/:id/pipelines/:pipeline_id/variables"},
     params: [
       id: StringOrInteger,
       pipeline_id: :integer
@@ -83,7 +83,7 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#create-a-new-pipeline
 
   action :create,
-    endpoint: {:post, "/projects/:id/pipeline"},
+    endpoint: {:post, "/api/v4/projects/:id/pipeline"},
     params: [
       id: StringOrInteger,
       ref: :string,

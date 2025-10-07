@@ -136,7 +136,7 @@ defmodule GitlabApi.HTTP do
   defp put_path_params(source_params, ["_"], source_path) do
     path =
       source_path
-      |> String.replace(":_", source_params)
+      |> String.replace(":_", "#{source_params}")
       |> String.trim_trailing("/")
 
     {path, %{}}

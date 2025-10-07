@@ -1,6 +1,7 @@
 defmodule GitlabApi.Users do
   use GitlabApi.API
 
+  alias Construct.Types.Enum
   alias GitlabApi.Types.ISODateTIme
   alias GitlabApi.Types.StringOrInteger
 
@@ -202,6 +203,4 @@ defmodule GitlabApi.Users do
       id: :integer,
       type: {{Enum, ["Project", "Namespace"]}, default: nil}
     ]
-
-
 end
