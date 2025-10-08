@@ -2,7 +2,7 @@ defmodule GitlabApi.Pipeline do
   use GitlabApi.API
 
   alias Construct.Types.Enum
-  alias GitlabApi.Types.ISODateTIme
+  alias GitlabApi.Types.ISODateTime
   alias GitlabApi.Types.StringOrInteger
 
   @status_type ~w(
@@ -26,10 +26,10 @@ defmodule GitlabApi.Pipeline do
       sort: {{Enum, ["asc", "desc", :asc, :desc]}, default: nil},
       source: {:string, default: nil},
       status: {{Enum, @status_type}, default: nil},
-      updated_after: {ISODateTIme, default: nil},
-      updated_before: {ISODateTIme, default: nil},
-      created_after: {ISODateTIme, default: nil},
-      created_before: {ISODateTIme, default: nil},
+      updated_after: {ISODateTime, default: nil},
+      updated_before: {ISODateTime, default: nil},
+      created_after: {ISODateTime, default: nil},
+      created_before: {ISODateTime, default: nil},
       username: {:string, default: nil},
       yaml_errors: {:boolean, default: nil}
     ]

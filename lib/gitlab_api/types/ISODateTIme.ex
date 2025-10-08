@@ -1,4 +1,4 @@
-defmodule GitlabApi.Types.ISODateTIme do
+defmodule GitlabApi.Types.ISODateTime do
   @behaviour Construct.Type
 
   def cast(%DateTime{} = dt) do

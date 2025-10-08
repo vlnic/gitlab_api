@@ -2,7 +2,7 @@ defmodule GitlabApi.Events do
   use GitlabApi.API
 
   alias Construct.Types.Enum
-  alias GitlabApi.Types.ISODateTIme
+  alias GitlabApi.Types.ISODate
   alias GitlabApi.Types.StringOrInteger
 
   @user_contribution_events ~w(
@@ -22,8 +22,8 @@ defmodule GitlabApi.Events do
       user_id: StringOrInteger,
       action: {{Enum, @user_contribution_events}, default: nil},
       target_type: {{Enum, @user_target_type}, default: nil},
-      before: {ISODateTIme, default: nil},
-      after: {ISODateTIme, default: nil},
+      before: {ISODate, default: nil},
+      after: {ISODate, default: nil},
       sort: {{Enum, ["asc", "desc", :asc, :desc]}, default: nil},
       page: {:integer, default: nil},
       per_page: {:integer, default: nil}

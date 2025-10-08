@@ -2,7 +2,7 @@ defmodule GitlabApi.Users do
   use GitlabApi.API
 
   alias Construct.Types.Enum
-  alias GitlabApi.Types.ISODateTIme
+  alias GitlabApi.Types.ISODateTime
   alias GitlabApi.Types.StringOrInteger
 
   @status_intervals ~w(
@@ -22,8 +22,8 @@ defmodule GitlabApi.Users do
       external: {:boolean, default: nil},
       extern_uid: {:string, default: nil},
       blocked: {:boolean, default: nil},
-      created_after: {ISODateTIme, default: nil},
-      created_before: {ISODateTIme, default: nil},
+      created_after: {ISODateTime, default: nil},
+      created_before: {ISODateTime, default: nil},
       exclude_active: {:boolean, default: nil},
       exclude_external: {:boolean, default: nil},
       exclude_humans: {:boolean, default: nil},
@@ -193,7 +193,7 @@ defmodule GitlabApi.Users do
 
   action :activities,
     endpoint: {:get, "/api/v4/user/activities"},
-    params: [from: {ISODateTIme, default: nil}]
+    params: [from: {ISODateTime, default: nil}]
 
   ## https://docs.gitlab.com/api/users/#list-projects-and-groups-that-a-user-is-a-member-of
 

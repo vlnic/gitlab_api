@@ -15,9 +15,9 @@ defmodule GitlabApi.HTTP do
 
   defmodule State do
     defstruct [
-      :method, :uri, :path, :req_headers, :req_body,
-      :opts, :params, :resp_body, :resp_headers, :status,
-      :error
+      :method, :uri, :path, :req_headers,
+      :req_body, :opts, :params, :resp_body,
+      :resp_headers, :status, :error
     ]
   end
 
