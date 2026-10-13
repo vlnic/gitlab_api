@@ -7,7 +7,8 @@ defmodule GitlabApi.HTTP do
   @type status :: non_neg_integer()
   @type reason :: term()
 
-  @callback request(method, uri, body, headers, opts) :: {:ok, status, body, headers} | {:error, reason}
+  @callback request(method, uri, body, headers, opts) ::
+              {:ok, status, body, headers} | {:error, reason}
 
   @client_impl Application.compile_env(:gitlab_api, :http_impl, GitlabApi.HTTP.Finch)
 
@@ -15,35 +16,63 @@ defmodule GitlabApi.HTTP do
 
   defmodule State do
     defstruct [
-      :method, :uri, :path, :req_headers,
-      :req_body, :opts, :params, :resp_body,
-      :resp_headers, :status, :error
+      :method,
+      :uri,
+      :path,
+      :req_headers,
+      :req_body,
+      :opts,
+      :context,
+      :params,
+      :resp_body,
+      :resp_headers,
+      :status,
+      :error
     ]
   end
 
- def request(method, path, params, opts) do
-    %State{
-      method: method,
-      path: path,
-      params: filter_params(params),
-      opts: opts,
-      req_headers: []
-    }
-    |> prepare_path()
-    |> build_request_uri()
-    |> build_request_headers()
-    |> build_request_body()
-    |> process_request()
-    |> process_response()
+  def request(method, path, params, opts) do
+    with {:ok, context} <- resolve_context(opts) do
+      %State{
+        method: method,
+        path: path,
+        params: filter_params(params),
+        opts: Keyword.delete(opts, :context),
+        context: context,
+        req_headers: []
+      }
+      |> prepare_path()
+      |> build_request_uri()
+      |> build_request_headers()
+      |> build_request_body()
+      |> process_request()
+      |> process_response()
+    end
   end
 
-  defp process_request(%State{
-    method: method,
-    uri: %URI{} = uri,
-    req_body: body,
-    req_headers: headers,
-    opts: opts
-  } = state) do
+  defp resolve_context(opts) do
+    case Keyword.fetch(opts, :context) do
+      {:ok, name} ->
+        case GitlabApi.Contexts.fetch(name) do
+          {:ok, context} -> {:ok, context}
+          {:error, :not_found} -> {:error, %{reason: {:context_not_found, name}}}
+          {:error, :unavailable} -> {:error, %{reason: :contexts_unavailable}}
+        end
+
+      :error ->
+        {:ok, %{host: GitlabApi.host(), api_token: GitlabApi.auth_token()}}
+    end
+  end
+
+  defp process_request(
+         %State{
+           method: method,
+           uri: %URI{} = uri,
+           req_body: body,
+           req_headers: headers,
+           opts: opts
+         } = state
+       ) do
     case @client_impl.request(method, URI.to_string(uri), body, headers, opts) do
       {:ok, status, body, headers} ->
         %{state | status: status, resp_body: body, resp_headers: headers}
@@ -59,28 +88,54 @@ defmodule GitlabApi.HTTP do
       {:error, _reason} -> {:ok, body}
     end
   end
+
   defp process_response(%State{status: code, resp_body: body}) when code in 400..499 do
     case Jason.decode(body) do
       {:ok, map} -> {:error, %{reason: map}}
       {:error, _reason} -> {:error, %{reason: body}}
     end
   end
+
   defp process_response(%State{status: code}) when code in 500..599 do
     {:error, %{reason: "service_unavailable"}}
   end
+
   defp process_response(%State{error: error} = state) do
-    Logger.warning("failed request with state: #{inspect state, pretty: true}")
+    Logger.warning("failed request: #{inspect(redact_log_state(state), pretty: true)}")
     {:error, %{reason: error}}
   end
 
-  defp build_request_headers(%State{opts: opts, req_headers: headers} = state) do
+  # Log only known-safe metadata. Payloads and options can contain secrets under
+  # arbitrary keys, and transport errors can include copies of request data.
+  defp redact_log_state(%State{} = state) do
+    %{
+      method: state.method,
+      uri: redact_log_uri(state.uri),
+      status: state.status,
+      error: redact_log_error(state.error)
+    }
+  end
+
+  defp redact_log_uri(%URI{} = uri) do
+    # Paths can contain interpolated parameters; queries, fragments and userinfo
+    # can contain credentials. Keep only the server address for diagnostics.
+    %{uri | userinfo: nil, path: nil, query: nil, fragment: nil}
+    |> URI.to_string()
+  end
+
+  defp redact_log_uri(_), do: "[REDACTED]"
+
+  defp redact_log_error(error) when is_atom(error), do: error
+  defp redact_log_error(_), do: "[REDACTED]"
+
+  defp build_request_headers(%State{opts: opts, context: context, req_headers: headers} = state) do
     token =
       case Keyword.fetch(opts, :api_token) do
         {:ok, token} ->
           token
 
         _ ->
-          GitlabApi.auth_token()
+          context.api_token
       end
 
     %{state | req_headers: [{"PRIVATE-TOKEN", token} | headers]}
@@ -98,7 +153,7 @@ defmodule GitlabApi.HTTP do
     {_, path} =
       state.params
       |> Map.to_list()
-      |> Enum.reduce({0, state.path}, fn({k, v}, {index, acc}) ->
+      |> Enum.reduce({0, state.path}, fn {k, v}, {index, acc} ->
         case index do
           0 ->
             {1, "#{acc}?#{k}=#{v}"}
@@ -108,15 +163,15 @@ defmodule GitlabApi.HTTP do
         end
       end)
 
-    %{state | uri: build_uri(path)}
+    %{state | uri: build_uri(state.context.host, path)}
   end
 
   defp build_request_uri(%State{path: path} = state) do
-    %{state | uri: build_uri(path)}
+    %{state | uri: build_uri(state.context.host, path)}
   end
 
-  defp build_uri(path) do
-    GitlabApi.host()
+  defp build_uri(host, path) do
+    host
     |> Path.join(path)
     |> URI.parse()
   end
@@ -141,9 +196,10 @@ defmodule GitlabApi.HTTP do
 
     {path, %{}}
   end
+
   defp put_path_params(source_params, keys, source_path) do
     {path, params} =
-      Enum.reduce(keys, {source_path, source_params}, fn(key, {path, params}) ->
+      Enum.reduce(keys, {source_path, source_params}, fn key, {path, params} ->
         {value, params} = Map.pop(params, String.to_existing_atom(key), "")
         {String.replace(path, ":#{key}", "#{value}"), params}
       end)
@@ -156,15 +212,17 @@ defmodule GitlabApi.HTTP do
     |> Regex.scan(path)
     |> Enum.take(3)
     |> List.flatten()
-    |> Enum.map(fn(k) -> String.replace(k, "/:", "") end)
+    |> Enum.map(fn k -> String.replace(k, "/:", "") end)
   end
 
   defp filter_params(params) when is_struct(params) do
     Map.from_struct(params) |> filter_map_params()
   end
+
   defp filter_params(params) when is_map(params) do
     filter_map_params(params)
   end
+
   defp filter_params(params) do
     params
   end

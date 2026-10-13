@@ -8,6 +8,7 @@ defmodule GitlabApi.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      GitlabApi.Contexts,
       {Finch, name: GitlabApi.finch_name()}
     ]
 
