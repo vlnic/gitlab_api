@@ -74,16 +74,17 @@ defmodule GitlabApi.HTTP do
   end
 
   defp build_request_headers(%State{opts: opts, req_headers: headers} = state) do
-    token =
-      case Keyword.fetch(opts, :api_token) do
-        {:ok, token} ->
-          token
-
-        _ ->
-          GitlabApi.auth_token()
-      end
-
-    %{state | req_headers: [{"PRIVATE-TOKEN", token} | headers]}
+    case Keyword.pop(opts, :api_token) do
+      {nil, opts} ->
+        %{state |
+          req_headers: [{"PRIVATE-TOKEN", GitlabApi.auth_token()} | headers],
+          opts: opts}
+        
+      {token, opts} ->
+        %{state |
+          req_headers: [{"PRIVATE-TOKEN", token} | headers],
+          opts: opts}
+    end
   end
 
   defp build_request_body(%State{method: method} = state) when method in [:get, :delete] do
