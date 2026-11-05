@@ -11,9 +11,10 @@ defmodule GitlabApi.Types.ISODateTime do
 
   def cast(dt) when is_binary(dt) do
     case DateTime.from_iso8601(dt) do
-      {:ok, dt, _} -> dt
+      {:ok, _datetime, _offset} -> {:ok, dt}
       _ -> :error
     end
   end
+
   def cast(_), do: :error
 end
