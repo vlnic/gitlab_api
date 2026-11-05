@@ -46,9 +46,10 @@ defmodule GitlabApi.Pipeline do
   ## https://docs.gitlab.com/api/pipelines/#get-the-latest-pipeline
 
   action :latest,
-    endpoint: {:get, "/api/v4/projects/:page/pipelines/latest"},
+    endpoint: {:get, "/api/v4/projects/:project/pipelines/latest"},
     params: [
-      ref: :string,
+      project: StringOrInteger,
+      ref: {:string, default: nil},
       page: {:integer, default: 1},
       per_page: {:integer, default: nil}
     ]

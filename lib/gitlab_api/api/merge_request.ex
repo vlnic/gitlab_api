@@ -7,7 +7,7 @@ defmodule GitlabApi.MergeRequest do
   ## https://docs.gitlab.com/api/merge_requests/#list-merge-requests
 
   action :list,
-    endpoint: {:get, "/api/v5/merge_requests"},
+    endpoint: {:get, "/api/v4/merge_requests"},
     params: [
       author_id: {:integer, default: nil},
       assignee_id: {:integer, default: nil},
@@ -27,6 +27,8 @@ defmodule GitlabApi.MergeRequest do
       non_archived: {:boolean, default: nil},
       not: {:string, default: nil},
       order_by: {{EnumType, ["created_at", "title", "merged_at", "updated_at"]}, default: nil},
+      page: {:integer, default: nil},
+      per_page: {:integer, default: nil},
       render_html: {:boolean, default: nil},
       reviewer_id: {:integer, default: nil},
       reviewer_username: {:string, default: nil},
@@ -43,27 +45,27 @@ defmodule GitlabApi.MergeRequest do
       with_merge_status_recheck: {:boolean, default: nil},
       wip: {:boolean, default: nil}
     ],
-  params_fn: fn(params) ->
-    Enum.reduce(params, %{}, fn({k, v}, acc) ->
-      case {k, v} do
-        {:in, v} when v in [nil, ""] ->
-          acc
+    params_fn: fn params ->
+      Enum.reduce(params, %{}, fn {k, v}, acc ->
+        case {k, v} do
+          {:in, v} when v in [nil, ""] ->
+            acc
 
-        {:in, v} ->
-          Map.put(acc, :in, Enum.join(v, ","))
+          {:in, v} ->
+            Map.put(acc, :in, Enum.join(v, ","))
 
-        {:wip, nil} ->
-          acc
+          {:wip, nil} ->
+            acc
 
-        {:wip, v} ->
-          Map.put(acc, :wip, if(v, do: "yes", else: "no"))
+          {:wip, v} ->
+            Map.put(acc, :wip, if(v, do: "yes", else: "no"))
 
-        {_k, nil} ->
-          acc
+          {_k, nil} ->
+            acc
 
-        {k, v} ->
-          Map.put(acc, k, v)
-      end
-    end)
-  end
+          {k, v} ->
+            Map.put(acc, k, v)
+        end
+      end)
+    end
 end

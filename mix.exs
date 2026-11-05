@@ -8,14 +8,14 @@ defmodule GitlabApi.MixProject do
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       description: description()
     ]
   end
 
   def description do
     "Api Client for Gitlab " <>
-    "https://docs.gitlab.com/api/rest/"
+      "https://docs.gitlab.com/api/rest/"
   end
 
   # Run "mix help compile.app" to learn about applications.
@@ -33,6 +33,7 @@ defmodule GitlabApi.MixProject do
   defp deps do
     [
       {:finch, "~> 0.20"},
+      {:mint, "~> 1.11"},
       {:construct, "~> 3.0"},
       {:jason, "~> 1.4"},
       {:mox, ">= 0.0.0", only: [:dev, :test]}
